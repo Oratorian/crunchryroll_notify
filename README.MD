@@ -47,9 +47,11 @@ Both implementations enable filtering by language dubs and series titles, ensuri
 ## Installation
 
 ### Linux Installation
-1. Clone repository ```bash
-git clone https://github.com/Oratorian/crunchryroll_notify.gi
+1. Clone repository `
+```bash
+git clone https://github.com/Oratorian/crunchryroll_notify.git
 ```
+
 2. Ensure required tools are installed:
    ```bash
    ./crunchyroll-notify.sh
@@ -58,12 +60,15 @@ git clone https://github.com/Oratorian/crunchryroll_notify.gi
 3. Configure preferences in `./cfg/config.json`.
 
 ### Windows Installation
-1. Download the script file from the [Releases](https://github.com/Oratorian/script-archive/releases).
+1. Clone repository
+```bash
+git clone https://github.com/Oratorian/crunchryroll_notify.git
+```
 2. Ensure the BurntToast module is installed:
    ```powershell
    Install-Module -Name BurntToast
    ```
-3. Modify the `$userMediaIDs` array and other configurations within the script.
+3. Configure preferences in `config.json`.
 
 ## Configuration
 
@@ -111,7 +116,8 @@ Modify the `config.json` file to set your preferences:
 ### Windows Configuration
 
 Modify the `config.json` file to set your preferences:
-```{
+```json
+{
     "userMediaIDs": {
         "Wistoria: Wand and Sword": "",
         "Tower of God": "",
@@ -123,7 +129,8 @@ Modify the `config.json` file to set your preferences:
     "GlobalDebug": false,
     "GlobalCheckInterval": 10,
     "announcedFile": "C:\\Temp\\announced_series_titles"
-}```
+}
+```
 
 ## Running the Script
 
@@ -140,39 +147,7 @@ Install a cron job for periodic checks:
 ### Windows
 Run the PowerShell script:
 ```powershell
-.CrunchyrollNotifier.ps1
+.cr-notify.ps1
 ```
 
-Set up a scheduled task for periodic execution.
-
-## Changelog
-
-### [2.0.1] - 2024-09-27
-#### Fixed
-- Added `ModuleToProcess` field to `.psd1` manifest files to correctly link `.psm1` files.
-- Specified module dependencies in the `.psd1` manifest files to ensure required modules are loaded or installed.
-
-### [2.0.0] - 2024-09-26
-#### Added
-- Refactored the script into modular architecture.
-- Implemented `.psd1` manifest files for better modularity and versioning.
-- Integrated Semantic Versioning.
-
-### [1.2.0] - 2024-09-26
-#### Added
-- Introduced `$checkInterval` for controlling RSS feed check intervals.
-- Added `Confirm-IntervalWarning` for unsafe interval warnings.
-
-#### Fixed
-- Corrected dub filtering and series handling logic.
-
-### [1.0.0 - 1.1.1] - Initial release with features for RSS feed parsing and tray notifications.
-
-## License
-
-This project is licensed under the GPL-3.0 License. See the `LICENSE` file for details.
-
----
-
-**Author**: Oration 'Mahesvara'  
-**GitHub**: [Oratorian@github.com](https://github.com/Oratorian)
+This script resets the the announce file whenever it detects a new day.
