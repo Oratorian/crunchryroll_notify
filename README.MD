@@ -1,120 +1,178 @@
-# Crunchyroll RSS Feed Notifier
+# Crunchyroll Anime Release Notifier
 
-This PowerShell script monitors a Crunchyroll RSS feed for new anime releases and sends Windows tray notifications using BurntToast. The script allows users to specify series titles and dubs to monitor and includes configurable intervals for checking the RSS feed. It also provides warnings for unsafe intervals and allows users to adjust accordingly to avoid IP bans. The script offers flexible logging options and displays the time remaining before the next check.
+## Description
 
-## Key Features:
-- **Customizable series and allowed dubs:** Specify which series and dubs to monitor.
-- **Configurable check interval:** Set the check interval with warnings if set below 10 minutes to avoid potential IP bans.
-- **Time remaining display:** Shows the time remaining before the next RSS feed check.
-- **Windows tray notifications:** Notifications via BurntToast with clickable links to Crunchyroll.
-- **Flexible logging:** Log messages to the console, file, or both with global configuration options.
-- **Automatic BurntToast installation:** Ensures the BurntToast module is installed and up-to-date.
+This repository contains scripts to monitor Crunchyroll RSS feeds for new anime releases and notify users based on their preferences. The repository offers two implementations:
 
-# Changelog
+1. **A Bash script for Linux and Unix-based systems**: Includes support for cron jobs, multiple notification services, and dependency management.
+2. **A PowerShell script for Windows systems**: Provides tray notifications using BurntToast, customizable intervals, and modular design.
 
-## [2.0.1] - 2024-09-27
-### Fixed
-- Added the `ModuleToProcess` field to `.psd1` manifest files to correctly link `.psm1` files, resolving an issue where modules were not being loaded during import.
+Both implementations enable filtering by language dubs and series titles, ensuring tailored notifications for users.
 
-### Added
-- Specified module dependencies in the `.psd1` manifest files using the `RequiredModules` field to ensure that required modules (e.g., `BurntToast`, `Pester`) are automatically loaded or installed when the module is imported.
+## Features
 
----
+### Common Features
+- Filters anime releases by user-specified dubs.
+- Supports notifications through:
+  - Email
+  - Pushover
+  - IFTTT
+  - Slack
+  - Discord
+  - Echo (Linux) / Tray Notifications (Windows).
+- Customizable time intervals for checking RSS feeds.
+- Logs activity and errors.
 
-## [2.0.0] - 2024-09-26
+### Linux-Specific Features
+- Cron job integration to reset the notification list daily.
+- Dependency checks and installation via `bash`.
 
-### Added
-- Refactored the script into a modular architecture, separating functions into individual PowerShell modules.
-- Implemented `.psd1` manifest files for each module to improve modularity, versioning, and reusability.
-- Integrated Semantic Versioning (SemVer) for the project, moving from the previous 4-digit versioning system to standardize the release process.
+### Windows-Specific Features
+- Windows tray notifications using BurntToast with clickable links to Crunchyroll.
+- Modular PowerShell design with `.psd1` manifest files for easier maintenance.
 
-### Changed
-- Functions and logic are now organized into separate PowerShell modules, making it easier to maintain, extend, and import individual components.
-- Updated logging, dub filtering, and notification systems to follow the new modular structure.
-- The main script now imports relevant modules using the manifest files and manages global configurations more efficiently.
-  
----
-## [1.2.0] - 2024-09-26
+## Requirements
 
-### Added
-- Added `$checkinterval` variable for controlling the interval between RSS feed checks, defaulting to 10 minutes, with configurable options.
-- Added `Confirm-IntervalWarning` function to alert users when the check interval is set to less than 10 minutes, with an option to proceed or set a new interval.
-- Introduced user-configurable logging options (`$GlobalLogToFile`, `$GlobalDebug`) allowing logging to console, file, or both, controlled via config without editing `Write-LogMessage` calls.
+### Linux
+- `jq`
+- `curl`
+- `xmlstarlet`
+- `bash`
+- `cron`
 
-### Changed
-- Refined `Write-LogMessage` to support logging configuration, reducing the need for manual changes when switching between logging modes.
-- Reworked the check interval logic so `Confirm-IntervalWarning` returns the final interval value, which is used for future checks, preventing reliance on initial config values.
-- Integrated user confirmation for check intervals less than 10 minutes and added handling for setting a new interval if declined.
+### Windows
+- PowerShell 5.0+
+- BurntToast PowerShell module
 
-### Fixed
-- Corrected a bug where setting an interval below 10 minutes would still use the original value from the config due to improper value reassignment logic.
-- Fixed an issue where incorrect log messages were displayed when setting new intervals that did not meet the minimum threshold.
-- Adjusted logic for checking `seriesTitle` and dub permissions to ensure the proper handling of allowed dubs and titles from `$userMediaIDs`.
+## Installation
 
----
+### Linux Installation
+1. Clone repository ```bash
+git clone https://github.com/Oratorian/crunchryroll_notify.gi
+```
+2. Ensure required tools are installed:
+   ```bash
+   ./crunchyroll-notify.sh
+   ```
+   The script will check and attempt to install missing dependencies.
+3. Configure preferences in `./cfg/config.json`.
 
-## [1.1.1] - 2024-09-25
+### Windows Installation
+1. Download the script file from the [Releases](https://github.com/Oratorian/script-archive/releases).
+2. Ensure the BurntToast module is installed:
+   ```powershell
+   Install-Module -Name BurntToast
+   ```
+3. Modify the `$userMediaIDs` array and other configurations within the script.
 
-### Changed
-- Adjusted the logging mechanism to include color-coded messages for warnings, errors, and normal logs, enhancing visual debugging.
-- Updated the structure of RSS feed handling due to the flattened XML returned by `Invoke-RestMethod`, eliminating reliance on nested item structures.
-- Modified the notification system to use BurntToast with clickable buttons (`New-BTButton`) to open the episode URL when clicked.
+## Configuration
 
-### Fixed
-- Resolved an issue where all anime titles were being announced instead of filtering by `$userMediaIDs`.
-- Corrected the RSS feed parsing logic to ensure items are processed from the flattened XML structure and not dependent on nested `channel.item`.
-- Addressed a minor logging issue where incorrect messages were being shown when setting a new check interval below the allowed range.
+### Linux Configuration
 
----
+Modify the `config.json` file to set your preferences:
 
-## [1.1.0] - 2024-09-24
+```json
+{
+  "cron_time": "0 0 * * *",
+  "anime": {
+    "Example Anime": "ExampleDub",
+  },
+  "notification_services": {
+    "email": false,
+    "pushover": false,
+    "ifttt": false,
+    "slack": false,
+    "discord": false,
+    "echo": true
+  },
+  "announcerange": 60,
+  "announced_file": "/tmp/announced_series_titles",
+  "email_recipient": "your_email@example.com",
+  "pushover": {
+    "user_key": "your_pushover_user_key",
+    "app_token": "your_pushover_app_token"
+  },
+  "ifttt": {
+    "event": "your_ifttt_event",
+    "key": "your_ifttt_key"
+  },
+  "slack": {
+    "webhook_url": "https://hooks.slack.com/services/your/slack/webhook/url"
+  },
+  "discord": {
+    "webhook_url": "https://discord.com/your/discord/channel/webhook/"
+  },
+  "debug": {
+    "enabled": false
+  }
+}
+```
 
-### Added
-- Introduced support for clickable notifications using BurntToast `New-BTButton` to launch the episode link directly from the tray notification.
-- Added `$userMediaIDs` to filter specific series based on user preferences, allowing users to track only their chosen anime series.
-- Implemented a time range check using `$announceRange`, limiting notifications to episodes within a certain release window (in minutes).
+### Windows Configuration
 
-### Changed
-- Replaced hardcoded time ranges with the `$announceRange` variable, giving users control over the time window for which episodes are announced.
-- Added color-coded log messages throughout the script to improve readability and debug output.
+Modify the `config.json` file to set your preferences:
+```{
+    "userMediaIDs": {
+        "Wistoria: Wand and Sword": "",
+        "Tower of God": "",
+        "Pseudo Harem": "",
+        "The Misfit of Demon King Academy": "Spanish, Portuguese"
+    },
+    "announceRange": 60,
+    "GlobalLogToFile": true,
+    "GlobalDebug": false,
+    "GlobalCheckInterval": 10,
+    "announcedFile": "C:\\Temp\\announced_series_titles"
+}```
 
-### Fixed
-- Fixed an issue where tray notifications did not send clickable buttons for watching the episode link directly from the notification.
-- Corrected the dub filtering logic to ensure only allowed dubs are notified.
-- Resolved a bug with `seriesTitle` and `episodeTitle` parsing, ensuring titles are correctly processed and logged.
+## Running the Script
 
----
+### Linux
+```bash
+./crunchyroll-notify.sh
+```
 
-## [1.0.0] - 2024-09-22
+Install a cron job for periodic checks:
+```bash
+(crontab -l; echo "*/15 * * * * /path/to/crunchyroll-notify.sh") | crontab -
+```
 
-### Added
-- Initial release of the script with basic RSS feed parsing functionality using `Invoke-RestMethod` to fetch Crunchyroll updates.
-- Implemented series title and dub filtering based on user input via `$userMediaIDs`.
-- Added time-based filtering to ensure episodes within a certain time window are notified.
-- Introduced BurntToast for tray notifications of new episode releases.
+### Windows
+Run the PowerShell script:
+```powershell
+.CrunchyrollNotifier.ps1
+```
 
-## Usage Instructions:
-1. Clone this repository or download the script file.
-2. Ensure that the required PowerShell module (BurntToast) is installed. The script will automatically install this if it's missing.
-3. Modify the `$userMediaIDs` in the configuration section to specify which series you want to monitor.
-4. Adjust the `$announceRange` and `$checkInterval` variables as needed.
-5. Run the script, and it will display notifications for new episodes based on your preferences.
-6. The script logs messages to the console, file, or both depending on the configuration.
+Set up a scheduled task for periodic execution.
 
-### Configuration Options:
-- **$userMediaIDs**: An associative array where you can list series titles and allowed dubs.
-- **$announceRange**: Controls the time range (in minutes) for filtering episodes.
-- **$GlobalLogToFile**: Enables or disables logging to a file.
-- **$GlobalDebug**: Logs messages to both file and console when set to `true`.
-- **$checkInterval**: Sets the interval for RSS feed checks in minutes.
+## Changelog
 
+### [2.0.1] - 2024-09-27
+#### Fixed
+- Added `ModuleToProcess` field to `.psd1` manifest files to correctly link `.psm1` files.
+- Specified module dependencies in the `.psd1` manifest files to ensure required modules are loaded or installed.
+
+### [2.0.0] - 2024-09-26
+#### Added
+- Refactored the script into modular architecture.
+- Implemented `.psd1` manifest files for better modularity and versioning.
+- Integrated Semantic Versioning.
+
+### [1.2.0] - 2024-09-26
+#### Added
+- Introduced `$checkInterval` for controlling RSS feed check intervals.
+- Added `Confirm-IntervalWarning` for unsafe interval warnings.
+
+#### Fixed
+- Corrected dub filtering and series handling logic.
+
+### [1.0.0 - 1.1.1] - Initial release with features for RSS feed parsing and tray notifications.
 
 ## License
 
-This script is released under the GPL-3.0 license. You are free to reproduce, modify, and distribute this script as long as the original author is credited.
+This project is licensed under the GPL-3.0 License. See the `LICENSE` file for details.
 
 ---
-
 
 **Author**: Oration 'Mahesvara'  
 **GitHub**: [Oratorian@github.com](https://github.com/Oratorian)
