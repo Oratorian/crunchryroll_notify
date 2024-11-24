@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 2.3.1 - 24.November.2024
+
+### Fixed
+- Fixed the announced_file handling logic to remove empty lines using sed. This ensures the announced file remains clean and prevents issues caused by blank entries in the RSS feed processing.
+- Fixed check to log and return early if the provided keyword is empty.
+
 ## 2.3.0 - 18.November.2024
 
 ### Added
